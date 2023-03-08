@@ -29,8 +29,8 @@ const myInq = async () => {
         "View all winners",
         "Add winner",
         "Full Ballon D'Or winners",
-        "Update winner team",
-        "Exit"
+        "Update winners team",
+        "Exit",
       ],
     },
   ]);
@@ -94,6 +94,20 @@ const myInq = async () => {
     );
     console.table(finalResult);
     myInq();
+  } else if (result["Introduction"] === "Update winners team") {
+    const update = await inquirer.prompt([
+      {
+        type: "input",
+        name: "Player ID",
+        message: "Enter the ID of the player whose team will be changed?",
+      },
+      {
+        type: "input",
+        name: "Team Update",
+        message: "Input the new team for the player:",
+      },
+    ]);
+    console.log(update)
   }
 };
 
