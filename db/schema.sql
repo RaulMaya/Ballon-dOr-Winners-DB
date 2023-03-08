@@ -50,3 +50,4 @@ CREATE TABLE winners (
 
 ALTER TABLE
   winners AUTO_INCREMENT = 1990;
+
