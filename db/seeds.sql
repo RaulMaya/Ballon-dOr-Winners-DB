@@ -1,4 +1,7 @@
 DELETE FROM
+    nations;
+
+DELETE FROM
     winners;
 
 DELETE FROM
@@ -8,107 +11,127 @@ DELETE FROM
     managers;
 
 INSERT INTO
-    winners (first_name, last_name, club, nation, age, coach)
+    nations (country)
+VALUES
+    ('Italy'),
+    ('France'),
+    ('Spain'),
+    ('Germany'),
+    ("Belgium"),
+    ("Bulgaria"),
+    ("Liberia"),
+    ("Brazil"),
+    ("Netherlands");
+
+INSERT INTO
+    clubs (club, club_rating, country_id)
+VALUES
+    ("Inter Milan", 8, 1),
+    ("Marseille", 7, 2),
+    ("Juventus", 9, 1),
+    ("Barcelona", 9, 3),
+    ("Borussia Dortmund", 8, 4),
+    ("AC Milan", 8, 1);
+
+INSERT INTO
+    managers (manager_fn, manager_ln, country_id)
+VALUES
+    ("Giovanni", "Trapattoni", 1),
+    ("Raymond", "Goethals", 5),
+    ("Fabio", "Capello", 1),
+    ("Johan", "Cruyff", 9),
+    ("Ottmar", "Hitzfeld", 4),
+    ("Luigi", "Simoni", 1),
+    ("Carlo", "Ancelotti", 1),
+    ("Louis", "Van Gaal", 9);
+
+INSERT INTO
+    winners (
+        first_name,
+        last_name,
+        nation_id,
+        club_id,
+        age,
+        manager_id
+    )
 VALUES
     (
         "Lothar",
         "Matthäus",
-        "Inter Milan",
-        "Germany",
+        4,
+        1,
         28,
-        "Giovanni Trapattoni"
+        1
     ),
     (
         "Jean-Pierre",
         "Papin",
-        "Marseille",
-        "France",
+        2,
+        2,
         27,
-        "Raymond Goethals"
+        2
     ),
     (
         "Marco",
-        "van Basten",
-        "AC Milan",
-        "Netherlands",
+        "Van Basten",
+        9,
+        6,
         28,
-        "Fabio Capello"
+        3
     ),
     (
         "Roberto",
         "Baggio",
-        "Juventus",
-        "Italy",
+        1,
+        3,
         26,
-        "Giovanni Trapattoni"
+        1
     ),
     (
         "Hristo",
         "Stoichkov",
-        "Barcelona",
-        "Bulgaria",
+        6,
+        4,
         28,
-        "Johan Cruyff"
+        4
     ),
     (
         "George",
         "Weah",
-        "AC Milan",
-        "Liberia",
+        7,
+        6,
         29,
-        "Fabio Capello"
+        3
     ),
     (
         "Matthias",
         "Sammer",
-        "Borussia Dortmund",
-        "Germany",
+        4,
+        5,
         29,
-        "Ottmar Hitzfeld"
+        5
     ),
     (
         "Ronaldo",
         "Nazario",
-        "Inter Milan",
-        "Brazil",
+        8,
+        1,
         21,
-        "Luigi Simoni"
+        6
     ),
     (
         "Zinedine",
         "Zidane",
-        "Juventus",
-        "France",
+        2,
+        3,
         26,
-        "Carlo Ancelotti"
+        7
     ),
     (
         "Rivaldo",
         null,
-        "Barcelona",
-        "Brazil",
+        8,
+        4,
         27,
-        "Louis van Gaal"
+        8
     );
-
-INSERT INTO
-    clubs (club, club_rating)
-VALUES
-    ("Inter Milan", 8),
-    ("Marseille", 7),
-    ("AC Milan", 9),
-    ("Juventus", 9),
-    ("Barcelona", 9),
-    ("Borussia Dortmund", 8);
-
-INSERT INTO
-    managers (manager_name)
-VALUES
-    ("Giovanni Trapattoni"),
-    ("Raymond Goethals"),
-    ("Fabio Capello"),
-    ("Johan Cruyff"),
-    ("Ottmar Hitzfeld"),
-    ("Luigi Simoni"),
-    ("Carlo Ancelotti"),
-    ("Louis van Gaal");
