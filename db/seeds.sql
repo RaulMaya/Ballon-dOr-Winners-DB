@@ -21,17 +21,19 @@ VALUES
     ("Bulgaria"),
     ("Liberia"),
     ("Brazil"),
-    ("Netherlands");
+    ("Netherlands"),
+    ("Portugal");
 
 INSERT INTO
     clubs (club, club_rating, country_id)
 VALUES
     ("Inter Milan", 8, 1),
-    ("Marseille", 7, 2),
-    ("Juventus", 9, 1),
-    ("Barcelona", 9, 3),
+    ("Marseille", 6, 2),
+    ("Juventus", 8, 1),
+    ("Barcelona", 8, 3),
     ("Borussia Dortmund", 8, 4),
-    ("AC Milan", 8, 1);
+    ("AC Milan", 8, 1),
+    ("Real Madrid", 10, 3);
 
 INSERT INTO
     managers (manager_fn, manager_ln, country_id)
@@ -43,7 +45,8 @@ VALUES
     ("Ottmar", "Hitzfeld", 4),
     ("Luigi", "Simoni", 1),
     ("Carlo", "Ancelotti", 1),
-    ("Louis", "Van Gaal", 9);
+    ("Louis", "Van Gaal", 9),
+    ("Vicente", "Del Bosque", 3);
 
 INSERT INTO
     winners (
@@ -134,4 +137,12 @@ VALUES
         4,
         27,
         8
+    ),
+    (
+        "Luis",
+        "Figo",
+        10,
+        7,
+        27,
+        9
     );

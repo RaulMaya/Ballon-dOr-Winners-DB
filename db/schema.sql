@@ -9,16 +9,14 @@ CREATE TABLE nations (
   country VARCHAR(30)
 );
 
-
-
 CREATE TABLE clubs (
   id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   club VARCHAR(30),
   club_rating INT,
   country_id INT,
-  FOREIGN KEY (country_id) 
-  REFERENCES nations(id)
-  ON DELETE SET NULL
+  FOREIGN KEY (country_id) REFERENCES nations(id) ON DELETE
+  SET
+    NULL
 );
 
 CREATE TABLE managers (
@@ -26,9 +24,9 @@ CREATE TABLE managers (
   manager_fn VARCHAR(30),
   manager_ln VARCHAR(30),
   country_id INT,
-  FOREIGN KEY (country_id) 
-  REFERENCES nations(id)
-  ON DELETE SET NULL
+  FOREIGN KEY (country_id) REFERENCES nations(id) ON DELETE
+  SET
+    NULL
 );
 
 CREATE TABLE winners (
@@ -39,13 +37,15 @@ CREATE TABLE winners (
   club_id INT,
   age INT NOT NULL,
   manager_id INT,
-  FOREIGN KEY (nation_id) 
-  REFERENCES nations(id),
-  FOREIGN KEY (club_id) 
-  REFERENCES clubs(id),
-  FOREIGN KEY (manager_id) 
-  REFERENCES managers(id)
-  ON DELETE SET NULL
+  FOREIGN KEY (nation_id) REFERENCES nations(id) ON DELETE
+  SET
+    NULL,
+    FOREIGN KEY (club_id) REFERENCES clubs(id) ON DELETE
+  SET
+    NULL,
+    FOREIGN KEY (manager_id) REFERENCES managers(id) ON DELETE
+  SET
+    NULL
 );
 
 ALTER TABLE
