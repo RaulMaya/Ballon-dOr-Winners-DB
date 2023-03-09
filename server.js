@@ -14,6 +14,13 @@ const execute_rows = (query) => {
   });
 };
 
+const listOfNations = async () => {
+  const countryData = await execute_rows("SELECT country FROM nations;");
+  const clubCountryMap = countryData.map((c) => c.country);
+  clubCountryMap.push("Add Country");
+  return clubCountryMap;
+};
+
 const addNation = async () => {
   const newNation = await inquirer.prompt([
     {
@@ -39,22 +46,21 @@ const addNation = async () => {
     },
   ]);
 
-  const arrNation = newNation.split(" ");
+  const arrNation = newNation["nation"].split(" ");
   for (let i = 0; i < arrNation.length; i++) {
-    arrNation[i] =
-      arrNation[i].charAt(0).toUpperCase() + arrNation[i].slice(1);
+    arrNation[i] = arrNation[i].charAt(0).toUpperCase() + arrNation[i].slice(1);
     const newCountry = arrNation.join(" ");
-  // Query database
+    // Query database
 
-  db.query(
-    `INSERT INTO nations (country) VALUES (?);`,
-    newCountry,
-    function (err, results) {
-      console.log(`${newCountry} added to the database.`);
-    }
-  );
+    db.query(
+      `INSERT INTO nations (country) VALUES (?);`,
+      newCountry,
+      function (err, results) {
+        console.log(`${newCountry} added to the database.`);
+      }
+    );
+  }
 };
-
 console.log(`  
   ___________________________
  |             |             |
@@ -115,10 +121,7 @@ const myInq = async () => {
       }
     );
   } else if (result["Introduction"] === "Add club") {
-    const countryData = await execute_rows("SELECT country FROM nations;");
-    const clubCountryMap = countryData.map((c) => c.country);
-    clubCountryMap.push("Add Country");
-
+    let countryList = await listOfNations();
     const newClub = await inquirer.prompt([
       {
         type: "input",
@@ -145,14 +148,14 @@ const myInq = async () => {
         type: "list",
         name: "clubCountry",
         message: "Select the country of origin of the club.",
-        choices: clubCountryMap,
+        choices: countryList,
       },
     ]);
 
     if (newClub["clubCountry"] === "Add Country") {
-      addNation();
+      await addNation();
     }
-    let countryId = clubCountryMap.indexOf(newClub["clubCountry"]);
+    let countryId = countryList.indexOf(newClub["clubCountry"]);
 
     const arrClub = newClub["club"].split(" ");
     for (let i = 0; i < arrClub.length; i++) {
@@ -194,6 +197,52 @@ const myInq = async () => {
         myInq();
       }
     );
+  } else if (result["Introduction"] === "Add manager") {
+    let countryList = await listOfNations();
+    const newManager = await inquirer.prompt([
+      {
+        type: "input",
+        name: "manager_fn",
+        message: "Enter manager first name.",
+      },
+      {
+        type: "input",
+        name: "manager_ln",
+        message: "Enter manager last name.",
+      },
+      {
+        type: "list",
+        name: "managerCountry",
+        message: "Select the country of origin of the manager.",
+        choices: countryList,
+      },
+    ]);
+    if (newManager["managerCountry"] === "Add Country") {
+      await addNation();
+    }
+    let countryId = countryList.indexOf(newManager["managerCountry"]);
+    const managerValues = [
+      newManager["manager_fn"],
+      newManager["manager_ln"],
+      countryId + 1,
+    ];
+    db.query(
+      `INSERT INTO managers (manager_fn, manager_ln, country_id) VALUES (?);`,
+      [managerValues],
+      function (err, results) {
+        if (err) throw err;
+        console.log(
+          `${newManager["manager_fn"]} ${newManager["manager_ln"]} added to the managers database.`
+        );
+      }
+    );
+    db.query(
+      "SELECT manager_fn, manager_ln, country as manager_country FROM managers JOIN nations ON managers.country_id = nations.id;",
+      function (err, results) {
+        console.table(results);
+        myInq();
+      }
+    );
   } else if (result["Introduction"] === "View all winners") {
     // Query database
     db.query(
@@ -203,6 +252,42 @@ const myInq = async () => {
         myInq();
       }
     );
+  } else if (result["Introduction"] === "Add winner") {
+    const newPlayer = await inquirer.prompt([
+      {
+        type: "input",
+        name: "fullName",
+        message: "Enter manager first name.",
+      },
+      {
+        type: "input",
+        name: "lastName",
+        message: "Enter manager last name.",
+      },
+      {
+        type: "list",
+        name: "playerCountry",
+        message: "Select the country of origin of the manager.",
+        choices: countryList,
+      },
+      {
+        type: "list",
+        name: "playerClub",
+        message: "Select the country of origin of the manager.",
+        choices: countryList,
+      },
+      {
+        type: "number",
+        name: "age",
+        message: "Enter manager last name.",
+      },
+      {
+        type: "list",
+        name: "playersManager",
+        message: "Select the country of origin of the manager.",
+        choices: countryList,
+      },
+    ]);
   } else if (result["Introduction"] === "Full Ballon D'Or winners") {
     // Query database
 
@@ -245,6 +330,9 @@ const myInq = async () => {
       },
     ]);
     console.log(update);
+  } else if (result["Introduction"] === "Exit") {
+    console.log("Thank you for using our Ballon d'Or database.");
+    process.exit();
   }
 };
 
