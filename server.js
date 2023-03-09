@@ -1,6 +1,19 @@
 const db = require("./config/connection");
 const inquirer = require("inquirer");
 
+function execute_rows(query) {
+  return new Promise((resolve, reject) => {
+    db.query(query, function (err, result, fields) {
+      if (err) {
+        // Returning the error
+        reject(err);
+      }
+
+      resolve(result);
+    });
+  });
+}
+
 console.log(`  
   ___________________________
  |             |             |
@@ -42,6 +55,16 @@ const myInq = async () => {
       console.table(results);
       myInq();
     });
+  } else if (result["Introduction"] === "Add nation") {
+    const newNation = await inquirer.prompt([
+      {
+        type: "input",
+        name: "nation",
+        message:
+          "Enter the new nationality that has won the ballon d'or:",
+      },
+    ]);
+    console.log(newNation['nation']);
   } else if (result["Introduction"] === "View all clubs") {
     // Query database
     db.query(
@@ -71,18 +94,7 @@ const myInq = async () => {
     );
   } else if (result["Introduction"] === "Full Ballon D'Or winners") {
     // Query database
-    function execute_rows(query) {
-      return new Promise((resolve, reject) => {
-        db.query(query, function (err, result, fields) {
-          if (err) {
-            // Returning the error
-            reject(err);
-          }
 
-          resolve(result);
-        });
-      });
-    }
     await execute_rows(
       `CREATE OR REPLACE VIEW winners_part1 AS (SELECT winners.id, first_name, last_name, age, country, club, club_rating, clubs.country_id as club_country_id, manager_fn, manager_ln, managers.country_id as manager_country_id FROM winners JOIN nations ON winners.nation_id = nations.id JOIN clubs ON winners.club_id = clubs.id JOIN managers ON winners.manager_id = managers.id);`
     );
@@ -95,19 +107,33 @@ const myInq = async () => {
     console.table(finalResult);
     myInq();
   } else if (result["Introduction"] === "Update winners team") {
+    const winnersData = await execute_rows(
+      "SELECT first_name, last_name FROM winners;"
+    );
+    const winnersMap = winnersData.map((result) => {
+      if (result["last_name"]) {
+        return result["first_name"] + " " + result["last_name"];
+      } else {
+        return result["first_name"];
+      }
+    });
+    console.log(winnersMap);
+
     const update = await inquirer.prompt([
       {
-        type: "input",
-        name: "Player ID",
-        message: "Enter the ID of the player whose team will be changed?",
+        type: "list",
+        name: "playerUpdate",
+        message:
+          "Which Ballon d'Or winning player would you like to change teams?",
+        choices: winnersMap,
       },
       {
         type: "input",
-        name: "Team Update",
+        name: "teamUpdate",
         message: "Input the new team for the player:",
       },
     ]);
-    console.log(update)
+    console.log(update);
   }
 };
 
