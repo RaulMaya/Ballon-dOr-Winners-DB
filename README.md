@@ -7,9 +7,7 @@
 
   <h2 align="center">Ballon d'Or Database</h2>
   <h4 align="center">Node.JS & MySQL</h4>
-
----
-
+  
 <br/>
 <p align="center">
     <a href="LICENSE" target="_blank">
@@ -30,7 +28,7 @@
 <br/>
 
 <p align="center">
-This Note Taker App project is a simple note-taking application built using Node.js and the Express.js framework. The application allows users to create, view, and delete notes, and all notes are stored in a JSON file.
+This is a command-line interface (CLI) application that allows users to query a MySQL database. The application uses the Inquirer.js package to prompt the user to select what they would like to consult. There are several options, including viewing and adding data on nations, clubs, managers, and Ballon d'Or winners. The application executes SQL queries on the database based on the user's selections and returns the results in a tabular format using the console.table() method. The application allows users to view data from the database, add new data to the database, update existing data, and delete data.
     <br />
     <br />
     <a href="https://github.com/RaulMaya/Ballon-dOr-Winners-DB">Repository</a>    
@@ -42,6 +40,8 @@ This Note Taker App project is a simple note-taking application built using Node
   </p>
 </div>
 
+
+
 ### Content Table
 
 - [About](#about)
@@ -51,34 +51,51 @@ This Note Taker App project is a simple note-taking application built using Node
 - [License](#license)
 - [Contact](#contact)
 
+<br>
+
 ### About
 
-<p>The application is organized into two main parts: the server-side code and the client-side code. The server-side code is responsible for handling HTTP requests and responses, processing user input, and managing the notes stored in the JSON file. The client-side code is responsible for displaying the user interface and sending requests to the server-side code via HTTP.</p>
+<p>This CLI Applcation runs using Node.js and MySQL, the program  prompts the user with a menu using the "inquirer" package. The user can select different options from the menu, such as viewing or adding data about nations, clubs, managers, and Ballon d'Or winners.</p>
 
-<p>The server-side code uses Express.js to create an HTTP server and handle routes for creating, reading and deleting notes. The notes are stored in a JSON file using the fs module provided by Node.js.</p>
+<p>When the user selects an option, the program queries a MySQL database using the "mysql2" package and displays the results in a table using the "console.table" function. The program uses several functions to add new data to the database, including addNation(), addClub(), and addManager().</p>
 
-<p>The client-side code is built using HTML, CSS, and JavaScript, and uses fetch() to make requests to the server-side code. The user interface is simple and intuitive, with a sidebar that displays all the notes and a main area that displays the content of the selected note.</p>
+<p>
+When the user selects the "Add winner" option, the program prompts the user to enter the name, age, country of origin, club, and manager of the Ballon d'Or winner, and adds this data to the "winners" table in the database.</p>
 
-<p>Overall, the Notes-App project is a great example of a simple yet effective note-taking application built using Node.js and the Express.js framework. It can be used as a starting point for building more complex applications or as a learning resource for those new to web development with Node.js.
+<p>The code includes ASCII art in the form of two console.log() statements, and uses async/await syntax to ensure that the menu options are displayed in the correct order.
 </p>
+
+<br>
 
 ### Usage
 
-<p>The usage of this application is to provide users with a simple and intuitive interface for creating, viewing, editing, and deleting notes. The application allows users to keep track of their thoughts and ideas in an organized manner and to access them from any device with an internet connection.</p>
+<p>This code displays a database query program menu and prompts the user to log in using Inquirer.js. Depending on the user's choice, the program queries a database and displays the result in tabular form. The program also allows users to add new entries to the database.</p>
+
+<br>
 
 ### Installation
 
-<p>The usage of this application is to provide users with a simple and intuitive interface for creating, viewing, editing, and deleting notes. The application allows users to keep track of their thoughts and ideas in an organized manner and to access them from any device with an internet connection.</p>
+```
+git clone git@github.com:RaulMaya/Ballon-dOr-Winners-DB.git
+npm i
+npm start
+```
+
+<br>
 
 ### Video
 <a href="https://github.com/RaulMaya/Ballon-dOr-Winners-DB">
 <img src="icon/app.gif" alt="Application behavior gif">
 </a>
  
+<br>
+
 ### License
 
 > You can check out the full license [here](https://github.com/RaulMaya/Ballon-dOr-Winners-DB/blob/master/LICENSE)
 > This project is licensed under the terms of the **MIT** license.
+
+<br>
 
 ### Contact
 
