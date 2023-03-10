@@ -24,6 +24,12 @@ console.log(`
  
  `);
 
+console.log(`
+██▄ ███ █   █   ███ █  █    ██▄  ███ ███    ██▄ ███ ███ ███ ██▄ ███ ███ ███
+█▄█ █▄█ █   █   █ █ ██▄█    █ █  █ █ █▄     █ █ █▄█  █  █▄█ █▄█ █▄█ █▄▄ █▄ 
+█▄█ █ █ █▄█ █▄█ █▄█ █ ██    ███  █▄█ █ █    ███ █ █  █  █ █ █▄█ █ █ ▄▄█ █▄▄
+
+`);
 const myInq = async () => {
   const result = await inquirer.prompt([
     {
@@ -41,7 +47,9 @@ const myInq = async () => {
         "Add winner",
         "Full Ballon D'Or winners",
         "Update winners team",
-        "Stats",
+        "Delete player",
+        "Ballon D'Or by clubs",
+        "Ballon D'Or by country",
         "Exit",
       ],
     },
@@ -58,8 +66,8 @@ const myInq = async () => {
     await addNation();
     db.query("SELECT * FROM nations", function (err, results) {
       console.table(results);
+      myInq();
     });
-    myInq();
   } else if (result["Introduction"] === "View all clubs") {
     // Query database
     db.query(
@@ -222,7 +230,7 @@ const myInq = async () => {
     ]);
     const playerId = winnersMap.indexOf(update["playerUpdate"]) + 1990;
     const clubId = clubList.indexOf(update["teamUpdate"]) + 1;
-    
+
     db.query(
       "UPDATE winners SET club_id = ? WHERE id = ?",
       [clubId, playerId],
@@ -242,6 +250,127 @@ const myInq = async () => {
     );
     const finalResult = await execute_rows(
       `SELECT winners_part2.id, first_name, last_name, age, winners_part2.country, club, club_rating, nations.country as club_country, manager_fn, manager_ln, manager_country FROM winners_part2 JOIN nations ON winners_part2.club_country_id = nations.id ORDER BY winners_part2.id ASC;`
+    );
+    console.table(finalResult);
+    myInq();
+  } else if (result["Introduction"] === "Delete player") {
+    const winnersData = await execute_rows(
+      "SELECT first_name, last_name FROM winners;"
+    );
+    const winnersMap = winnersData.map((result) => {
+      if (result["last_name"]) {
+        return result["first_name"] + " " + result["last_name"];
+      } else {
+        return result["first_name"];
+      }
+    });
+
+    const delPlayer = await inquirer.prompt([
+      {
+        type: "list",
+        name: "playerDelete",
+        message: "Which player do you want to remove?",
+        choices: winnersMap,
+      },
+    ]);
+    const playerId = winnersMap.indexOf(delPlayer["playerDelete"]) + 1990;
+
+    db.query(
+      "DELETE FROM winners WHERE id = ?",
+      playerId,
+      function (err, results) {
+        if (err) throw err;
+        console.log(`----Player Deleted----`);
+      }
+    );
+
+    await execute_rows(
+      `CREATE OR REPLACE VIEW winners_part1 AS (SELECT winners.id, first_name, last_name, age, country, club, club_rating, clubs.country_id as club_country_id, manager_fn, manager_ln, managers.country_id as manager_country_id FROM winners JOIN nations ON winners.nation_id = nations.id JOIN clubs ON winners.club_id = clubs.id JOIN managers ON winners.manager_id = managers.id);`
+    );
+    await execute_rows(
+      `CREATE OR REPLACE VIEW winners_part2 AS (SELECT winners_part1.id, first_name, last_name, age, winners_part1.country, club, club_rating, club_country_id, manager_fn, manager_ln, nations.country as manager_country FROM winners_part1 JOIN nations ON winners_part1.manager_country_id = nations.id);`
+    );
+    const finalResult = await execute_rows(
+      `SELECT winners_part2.id, first_name, last_name, age, winners_part2.country, club, club_rating, nations.country as club_country, manager_fn, manager_ln, manager_country FROM winners_part2 JOIN nations ON winners_part2.club_country_id = nations.id ORDER BY winners_part2.id ASC;`
+    );
+    console.table(finalResult);
+    myInq();
+
+  } else if (result["Introduction"] === "Ballon D'Or by clubs") {
+    await execute_rows(
+      `CREATE OR REPLACE VIEW winners_part1 AS (SELECT winners.id, first_name, last_name, age, country, club, club_rating, clubs.country_id as club_country_id, manager_fn, manager_ln, managers.country_id as manager_country_id FROM winners JOIN nations ON winners.nation_id = nations.id JOIN clubs ON winners.club_id = clubs.id JOIN managers ON winners.manager_id = managers.id);`
+    );
+    await execute_rows(
+      `CREATE OR REPLACE VIEW winners_part2 AS (SELECT winners_part1.id, first_name, last_name, age, winners_part1.country, club, club_rating, club_country_id, manager_fn, manager_ln, nations.country as manager_country FROM winners_part1 JOIN nations ON winners_part1.manager_country_id = nations.id);`
+    );
+    await execute_rows(
+      `CREATE
+      OR REPLACE VIEW full_list AS (
+          SELECT
+              winners_part2.id,
+              first_name,
+              last_name,
+              age,
+              winners_part2.country,
+              club,
+              club_rating,
+              nations.country as club_country,
+              manager_fn,
+              manager_ln,
+              manager_country
+          FROM
+              winners_part2
+              JOIN nations ON winners_part2.club_country_id = nations.id
+      );`
+    );
+    const finalResult = await execute_rows(
+      `SELECT
+      club AS Club,
+      COUNT(id) AS Number_Of_Ballon_DOrs
+  FROM
+      full_list
+  GROUP BY
+      club
+  ORDER BY Number_Of_Ballon_DOrs DESC;`
+    );
+    console.table(finalResult);
+    myInq();
+  } else if (result["Introduction"] === "Ballon D'Or by country") {
+    await execute_rows(
+      `CREATE OR REPLACE VIEW winners_part1 AS (SELECT winners.id, first_name, last_name, age, country, club, club_rating, clubs.country_id as club_country_id, manager_fn, manager_ln, managers.country_id as manager_country_id FROM winners JOIN nations ON winners.nation_id = nations.id JOIN clubs ON winners.club_id = clubs.id JOIN managers ON winners.manager_id = managers.id);`
+    );
+    await execute_rows(
+      `CREATE OR REPLACE VIEW winners_part2 AS (SELECT winners_part1.id, first_name, last_name, age, winners_part1.country, club, club_rating, club_country_id, manager_fn, manager_ln, nations.country as manager_country FROM winners_part1 JOIN nations ON winners_part1.manager_country_id = nations.id);`
+    );
+    await execute_rows(
+      `CREATE
+      OR REPLACE VIEW full_list AS (
+          SELECT
+              winners_part2.id,
+              first_name,
+              last_name,
+              age,
+              winners_part2.country,
+              club,
+              club_rating,
+              nations.country as club_country,
+              manager_fn,
+              manager_ln,
+              manager_country
+          FROM
+              winners_part2
+              JOIN nations ON winners_part2.club_country_id = nations.id
+      );`
+    );
+    const finalResult = await execute_rows(
+      `SELECT
+      country AS Country,
+      COUNT(id) AS Number_Of_Ballon_DOrs
+  FROM
+      full_list
+  GROUP BY
+      country
+  ORDER BY Number_Of_Ballon_DOrs DESC;`
     );
     console.table(finalResult);
     myInq();
