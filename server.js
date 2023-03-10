@@ -1,66 +1,7 @@
 const db = require("./config/connection");
 const inquirer = require("inquirer");
+const { execute_rows, listOfManagers, listOfClubs, listOfNations, addClub, addNation, addManager } = require("./lib/helper")
 
-const execute_rows = (query) => {
-  return new Promise((resolve, reject) => {
-    db.query(query, function (err, result, fields) {
-      if (err) {
-        // Returning the error
-        reject(err);
-      }
-
-      resolve(result);
-    });
-  });
-};
-
-const listOfNations = async () => {
-  const countryData = await execute_rows("SELECT country FROM nations;");
-  const clubCountryMap = countryData.map((c) => c.country);
-  clubCountryMap.push("Add Country");
-  return clubCountryMap;
-};
-
-const addNation = async () => {
-  const newNation = await inquirer.prompt([
-    {
-      type: "input",
-      name: "nation",
-      message: "Enter the new nationality that has won the ballon d'or.",
-      validate: async (answer) => {
-        const arrNation = answer.split(" ");
-        for (let i = 0; i < arrNation.length; i++) {
-          arrNation[i] =
-            arrNation[i].charAt(0).toUpperCase() + arrNation[i].slice(1);
-          const newCountry = arrNation.join(" ");
-          const currNations = await execute_rows("SELECT country FROM nations");
-          const nationsMap = currNations.map((country) => country.country);
-          if (nationsMap.includes(newCountry)) {
-            let index = nationsMap.indexOf(newCountry);
-            return `${newCountry} (${index}) is already in our database.`;
-          } else {
-            return true;
-          }
-        }
-      },
-    },
-  ]);
-
-  const arrNation = newNation["nation"].split(" ");
-  for (let i = 0; i < arrNation.length; i++) {
-    arrNation[i] = arrNation[i].charAt(0).toUpperCase() + arrNation[i].slice(1);
-    const newCountry = arrNation.join(" ");
-    // Query database
-
-    db.query(
-      `INSERT INTO nations (country) VALUES (?);`,
-      newCountry,
-      function (err, results) {
-        console.log(`${newCountry} added to the database.`);
-      }
-    );
-  }
-};
 console.log(`  
   ___________________________
  |             |             |
@@ -106,7 +47,7 @@ const myInq = async () => {
       myInq();
     });
   } else if (result["Introduction"] === "Add nation") {
-    addNation();
+    await addNation();
     db.query("SELECT * FROM nations", function (err, results) {
       console.table(results);
     });
@@ -121,73 +62,14 @@ const myInq = async () => {
       }
     );
   } else if (result["Introduction"] === "Add club") {
-    let countryList = await listOfNations();
-    const newClub = await inquirer.prompt([
-      {
-        type: "input",
-        name: "club",
-        message:
-          "Enter the club that has/had a player who won the ballon d'or with that team.",
-      },
-      {
-        type: "number",
-        name: "clubRating",
-        message: "From 1 to 10, please rate this team.",
-        validate: (answer) => {
-          if (typeof answer === "number") {
-            if (answer < 0 || answer > 10) {
-              return "Please enter a number from 1 to 10.";
-            }
-            return true;
-          } else {
-            return "Please enter a number.";
-          }
-        },
-      },
-      {
-        type: "list",
-        name: "clubCountry",
-        message: "Select the country of origin of the club.",
-        choices: countryList,
-      },
-    ]);
-
-    if (newClub["clubCountry"] === "Add Country") {
-      await addNation();
-    }
-    let countryId = countryList.indexOf(newClub["clubCountry"]);
-
-    const arrClub = newClub["club"].split(" ");
-    for (let i = 0; i < arrClub.length; i++) {
-      arrClub[i] = arrClub[i].charAt(0).toUpperCase() + arrClub[i].slice(1);
-    }
-
-    const newTeam = arrClub.join(" ");
-    // Query database
-    const currClubs = await execute_rows("SELECT club FROM clubs");
-    const clubMap = currClubs.map((club) => club.club);
-    if (clubMap.includes(newTeam)) {
-      let index = clubMap.indexOf(newTeam);
-      console.log(`${newTeam} (${index}) is already in our database.`);
-      myInq();
-    } else {
-      const clubValues = [newTeam, newClub["clubRating"], countryId + 1];
-      db.query(
-        `INSERT INTO clubs (club, club_rating, country_id) VALUES (?);`,
-        [clubValues],
-        function (err, results) {
-          if (err) throw err;
-          console.log(`${newTeam} added to the database.`);
-        }
-      );
-      db.query(
-        "SELECT club, club_rating, country as clubs_country FROM clubs JOIN nations ON clubs.country_id = nations.id;",
-        function (err, results) {
-          console.table(results);
-          myInq();
-        }
-      );
-    }
+    await addClub();
+    db.query(
+      "SELECT club, club_rating, country as clubs_country FROM clubs JOIN nations ON clubs.country_id = nations.id;",
+      function (err, results) {
+        console.table(results);
+        myInq();
+      }
+    );
   } else if (result["Introduction"] === "View all managers") {
     // Query database
     db.query(
@@ -198,44 +80,7 @@ const myInq = async () => {
       }
     );
   } else if (result["Introduction"] === "Add manager") {
-    let countryList = await listOfNations();
-    const newManager = await inquirer.prompt([
-      {
-        type: "input",
-        name: "manager_fn",
-        message: "Enter manager first name.",
-      },
-      {
-        type: "input",
-        name: "manager_ln",
-        message: "Enter manager last name.",
-      },
-      {
-        type: "list",
-        name: "managerCountry",
-        message: "Select the country of origin of the manager.",
-        choices: countryList,
-      },
-    ]);
-    if (newManager["managerCountry"] === "Add Country") {
-      await addNation();
-    }
-    let countryId = countryList.indexOf(newManager["managerCountry"]);
-    const managerValues = [
-      newManager["manager_fn"],
-      newManager["manager_ln"],
-      countryId + 1,
-    ];
-    db.query(
-      `INSERT INTO managers (manager_fn, manager_ln, country_id) VALUES (?);`,
-      [managerValues],
-      function (err, results) {
-        if (err) throw err;
-        console.log(
-          `${newManager["manager_fn"]} ${newManager["manager_ln"]} added to the managers database.`
-        );
-      }
-    );
+    await addManager();
     db.query(
       "SELECT manager_fn, manager_ln, country as manager_country FROM managers JOIN nations ON managers.country_id = nations.id;",
       function (err, results) {
@@ -253,41 +98,45 @@ const myInq = async () => {
       }
     );
   } else if (result["Introduction"] === "Add winner") {
+    let countryList = await listOfNations();
+    let clubList = await listOfClubs();
+    let managerList = await listOfManagers();
+
     const newPlayer = await inquirer.prompt([
       {
         type: "input",
         name: "fullName",
-        message: "Enter manager first name.",
+        message: "Enter the name of the winner of the ballon d'or.",
       },
       {
         type: "input",
         name: "lastName",
-        message: "Enter manager last name.",
+        message: "Enter the last name of the winner of the ballon d'or.",
       },
       {
         type: "list",
         name: "playerCountry",
-        message: "Select the country of origin of the manager.",
+        message:
+          "Select the country of origin of the winner of the ballon d'or.",
         choices: countryList,
       },
       {
         type: "list",
         name: "playerClub",
-        message: "Select the country of origin of the manager.",
-        choices: countryList,
-      },
-      {
-        type: "number",
-        name: "age",
-        message: "Enter manager last name.",
+        message: "Select the club where this player won the Ballon d'Or.",
+        choices: clubList,
       },
       {
         type: "list",
         name: "playersManager",
-        message: "Select the country of origin of the manager.",
-        choices: countryList,
+        message:
+          "Select the coach who directed this player when he won the ballon d'or.",
+        choices: managerList,
       },
     ]);
+
+    console.log(newPlayer);
+    myInq();
   } else if (result["Introduction"] === "Full Ballon D'Or winners") {
     // Query database
 
