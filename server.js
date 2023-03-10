@@ -1,6 +1,14 @@
 const db = require("./config/connection");
 const inquirer = require("inquirer");
-const { execute_rows, listOfManagers, listOfClubs, listOfNations, addClub, addNation, addManager } = require("./lib/helper")
+const {
+  execute_rows,
+  listOfManagers,
+  listOfClubs,
+  listOfNations,
+  addClub,
+  addNation,
+  addManager,
+} = require("./lib/helper");
 
 console.log(`  
   ___________________________
@@ -105,13 +113,18 @@ const myInq = async () => {
     const newPlayer = await inquirer.prompt([
       {
         type: "input",
-        name: "fullName",
+        name: "firstName",
         message: "Enter the name of the winner of the ballon d'or.",
       },
       {
         type: "input",
         name: "lastName",
         message: "Enter the last name of the winner of the ballon d'or.",
+      },
+      {
+        type: "number",
+        name: "age",
+        message: "Enter the age of the winner of the ballon d'or.",
       },
       {
         type: "list",
@@ -135,7 +148,35 @@ const myInq = async () => {
       },
     ]);
 
-    console.log(newPlayer);
+    let countryId = countryList.indexOf(newPlayer["playerCountry"]);
+    let clubId = clubList.indexOf(newPlayer["playerClub"]);
+    let managerId = managerList.indexOf(newPlayer["playersManager"]);
+
+    const playerValues = [
+      newPlayer["firstName"],
+      newPlayer["lastName"],
+      countryId + 1,
+      clubId + 1,
+      newPlayer["age"],
+      managerId + 1,
+    ];
+    db.query(
+      `INSERT INTO winners (first_name, last_name, nation_id, club_id, age, manager_id) VALUES (?);`,
+      [playerValues],
+      function (err, results) {
+        if (err) throw err;
+        console.log(
+          `${newPlayer["firstName"]} ${newPlayer["lastName"]} added to the database.`
+        );
+      }
+    );
+    db.query(
+      "SELECT first_name, last_name, age FROM winners;",
+      function (err, results) {
+        console.table(results);
+        myInq();
+      }
+    );
     myInq();
   } else if (result["Introduction"] === "Full Ballon D'Or winners") {
     // Query database
@@ -162,7 +203,7 @@ const myInq = async () => {
         return result["first_name"];
       }
     });
-    console.log(winnersMap);
+    let clubList = await listOfClubs();
 
     const update = await inquirer.prompt([
       {
@@ -173,23 +214,41 @@ const myInq = async () => {
         choices: winnersMap,
       },
       {
-        type: "input",
+        type: "list",
         name: "teamUpdate",
-        message: "Input the new team for the player:",
+        message: "What team do you want to switch to?",
+        choices: clubList,
       },
     ]);
-    console.log(update);
+    const playerId = winnersMap.indexOf(update["playerUpdate"]) + 1990;
+    const clubId = clubList.indexOf(update["teamUpdate"]) + 1;
+    
+    db.query(
+      "UPDATE winners SET club_id = ? WHERE id = ?",
+      [clubId, playerId],
+      function (err, results) {
+        if (err) throw err;
+        console.log(`
+        Team Updated \n
+        New Team: ${update["teamUpdate"]}`);
+      }
+    );
+
+    await execute_rows(
+      `CREATE OR REPLACE VIEW winners_part1 AS (SELECT winners.id, first_name, last_name, age, country, club, club_rating, clubs.country_id as club_country_id, manager_fn, manager_ln, managers.country_id as manager_country_id FROM winners JOIN nations ON winners.nation_id = nations.id JOIN clubs ON winners.club_id = clubs.id JOIN managers ON winners.manager_id = managers.id);`
+    );
+    await execute_rows(
+      `CREATE OR REPLACE VIEW winners_part2 AS (SELECT winners_part1.id, first_name, last_name, age, winners_part1.country, club, club_rating, club_country_id, manager_fn, manager_ln, nations.country as manager_country FROM winners_part1 JOIN nations ON winners_part1.manager_country_id = nations.id);`
+    );
+    const finalResult = await execute_rows(
+      `SELECT winners_part2.id, first_name, last_name, age, winners_part2.country, club, club_rating, nations.country as club_country, manager_fn, manager_ln, manager_country FROM winners_part2 JOIN nations ON winners_part2.club_country_id = nations.id ORDER BY winners_part2.id ASC;`
+    );
+    console.table(finalResult);
+    myInq();
   } else if (result["Introduction"] === "Exit") {
     console.log("Thank you for using our Ballon d'Or database.");
     process.exit();
   }
 };
-
-// async function asyncCall() {
-//   console.log("calling");
-//   const result = await resolveAfter2Seconds();
-//   console.log(result);
-//   // Expected output: "resolved"
-// }
 
 myInq();
