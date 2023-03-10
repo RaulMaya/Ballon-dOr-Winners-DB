@@ -20,7 +20,7 @@
         <img src="https://img.shields.io/badge/node.js-v16.15.1-green.svg" alt="Node.JS Version">
     </a>
     <div style="position:relative;width:fit-content;height:fit-content;">
-            <a style="position:absolute;top:20px;right:1rem;opacity:0.8;" href="https://clipchamp.com/watch/zv51AufUdjY?utm_source=embed&utm_medium=embed&utm_campaign=watch">
+            <a style="position:absolute;top:20px;right:1rem;opacity:0.8;" href="https://clipchamp.com/watch/U5gM42W5s4B">
                 <img style="height:22px;" src="https://clipchamp.com/e.svg" alt="Made with Clipchamp" />
             </a>
     </div>
@@ -84,7 +84,7 @@ npm start
 <br>
 
 ### Video
-<a href="https://github.com/RaulMaya/Ballon-dOr-Winners-DB">
+<a href="https://www.youtube.com/watch?v=LcycfAQQEzo">
 <img src="icon/app.gif" alt="Application behavior gif">
 </a>
  
